@@ -92,7 +92,12 @@ export default function CandidateDetailPage() {
             </div>
           </div>
 
+          <label htmlFor="application-status" className="sr-only">
+            Application status
+          </label>
           <select
+            id="application-status"
+            aria-label="Application status"
             value={application?.status}
             onChange={(e) => {
               // Handle status update
@@ -200,6 +205,7 @@ export default function CandidateDetailPage() {
                             href={project.githubLink}
                             target="_blank"
                             rel="noopener noreferrer"
+                            aria-label={`View ${project.title} GitHub repository`}
                             className="text-gray-600 hover:text-gray-900"
                           >
                             <Github className="w-5 h-5" />
@@ -281,6 +287,7 @@ export default function CandidateDetailPage() {
                     href={candidate.socialLinks.github}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="Open candidate GitHub profile"
                     className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition"
                   >
                     <span className="font-medium text-gray-900">GitHub</span>
@@ -293,6 +300,7 @@ export default function CandidateDetailPage() {
                     href={candidate.socialLinks.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="Open candidate LinkedIn profile"
                     className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition"
                   >
                     <span className="font-medium text-gray-900">LinkedIn</span>
@@ -305,6 +313,7 @@ export default function CandidateDetailPage() {
                     href={candidate.socialLinks.portfolio}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="Open candidate portfolio"
                     className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition"
                   >
                     <span className="font-medium text-gray-900">Portfolio</span>

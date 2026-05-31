@@ -208,7 +208,12 @@ export default function RecruiterDashboard() {
                     </div>
 
                     <div className="flex gap-2">
+                      <label htmlFor={`application-status-${app._id}`} className="sr-only">
+                        Application status
+                      </label>
                       <select
+                        id={`application-status-${app._id}`}
+                        aria-label="Application status"
                         value={app.status}
                         onChange={(e) => {
                           // Handle status update

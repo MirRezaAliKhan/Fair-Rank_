@@ -25,12 +25,12 @@ export default function ProgressBar({
           </span>
         )}
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-3">
-        <div
-          className="bg-gradient-to-r from-cyan-500 to-blue-600 h-3 rounded-full transition-all duration-300"
-          style={{ width: `${percentage}%` }}
-        ></div>
-      </div>
+      <progress
+        className="progress-track"
+        value={Math.min(Math.max(value, 0), maxValue)}
+        max={maxValue}
+        aria-label={label}
+      />
     </div>
   );
 }

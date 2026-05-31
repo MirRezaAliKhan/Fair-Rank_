@@ -228,7 +228,11 @@ export default function CreateRolePage() {
                         {Math.round((formData.weights as any)[item.key] * 100)}%
                       </span>
                     </div>
+                    <label htmlFor={`${item.key}-weight`} className="sr-only">
+                      {item.label} weight
+                    </label>
                     <input
+                      id={`${item.key}-weight`}
                       type="range"
                       min="0"
                       max="100"

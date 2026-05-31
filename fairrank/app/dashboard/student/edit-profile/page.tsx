@@ -197,37 +197,47 @@ export default function EditProfilePage() {
               <div className="space-y-4">
                 {formData.skills?.map((skill: any, idx: number) => (
                   <div key={idx} className="flex gap-4">
-                    <input
-                      type="text"
-                      value={skill.name}
-                      onChange={(e) => {
-                        const newSkills = [...formData.skills];
-                        newSkills[idx].name = e.target.value;
-                        setFormData({ ...formData, skills: newSkills });
-                      }}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      placeholder="Skill name"
-                    />
-                    <select
-                      value={skill.proficiency}
-                      onChange={(e) => {
-                        const newSkills = [...formData.skills];
-                        newSkills[idx].proficiency = e.target.value;
-                        setFormData({ ...formData, skills: newSkills });
-                      }}
-                      className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    >
-                      <option value="beginner">Beginner</option>
-                      <option value="intermediate">Intermediate</option>
-                      <option value="advanced">Advanced</option>
-                      <option value="expert">Expert</option>
-                    </select>
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={skill.name}
+                        onChange={(e) => {
+                          const newSkills = [...formData.skills];
+                          newSkills[idx].name = e.target.value;
+                          setFormData({ ...formData, skills: newSkills });
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                        placeholder="Skill name"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor={`skill-proficiency-${idx}`} className="sr-only">
+                        Skill proficiency
+                      </label>
+                      <select
+                        id={`skill-proficiency-${idx}`}
+                        aria-label="Skill proficiency"
+                        value={skill.proficiency}
+                        onChange={(e) => {
+                          const newSkills = [...formData.skills];
+                          newSkills[idx].proficiency = e.target.value;
+                          setFormData({ ...formData, skills: newSkills });
+                        }}
+                        className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                      >
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                        <option value="expert">Expert</option>
+                      </select>
+                    </div>
                     <button
                       type="button"
                       onClick={() => {
                         const newSkills = formData.skills.filter((_: any, i: number) => i !== idx);
                         setFormData({ ...formData, skills: newSkills });
                       }}
+                      aria-label={`Remove ${skill.name || 'skill'}`}
                       className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition"
                     >
                       <Trash2 className="w-5 h-5" />

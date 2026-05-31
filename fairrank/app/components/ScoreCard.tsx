@@ -37,9 +37,12 @@ export default function ScoreCard({
         </div>
       </div>
 
-      <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-        <div className={`${color} h-2 rounded-full transition-all`} style={{ width: `${percentage}%` }}></div>
-      </div>
+      <progress
+        className={`score-progress ${color} mb-2`}
+        value={Math.min(Math.max(score, 0), maxScore)}
+        max={maxScore}
+        aria-label={`${title} score`}
+      />
 
       {trust !== undefined && (
         <p className="text-xs text-gray-500">

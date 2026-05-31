@@ -91,12 +91,12 @@ export default function StudentDashboard() {
               </div>
 
               <div className="flex-1">
-                <div className="bg-gray-200 rounded-full h-4 mb-2">
-                  <div
-                    className="bg-gradient-to-r from-cyan-500 to-blue-600 h-4 rounded-full transition-all"
-                    style={{ width: `${ussScore}%` }}
-                  ></div>
-                </div>
+                <progress
+                  className="progress-track mb-2"
+                  value={Math.min(Math.max(ussScore, 0), 100)}
+                  max={100}
+                  aria-label="USS progress"
+                />
                 <p className="text-gray-600 text-sm">Progress</p>
               </div>
             </div>
