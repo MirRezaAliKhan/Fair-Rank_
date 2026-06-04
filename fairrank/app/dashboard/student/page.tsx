@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Edit2, ExternalLink } from 'lucide-react';
+import { Edit2, ExternalLink } from 'lucide-react';
 import Navbar from '@/app/components/Navbar';
 import ScoreCard from '@/app/components/ScoreCard';
 import axios from 'axios';
@@ -66,107 +66,125 @@ export default function StudentDashboard() {
       <Navbar isLoggedIn userRole="student" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Welcome Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             Welcome back, {user?.name}! 👋
           </h1>
-          <p className="text-gray-600">Your Universal Standard Score and profile overview</p>
+          <p className="text-gray-600">A sharpened overview of your score, priorities, and next steps.</p>
         </div>
 
-        {/* Main USS Card */}
-        <div className="grid lg:grid-cols-3 gap-6 mb-8">
-          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-8">
-            <h2 className="text-sm font-semibold text-gray-600 uppercase mb-4">
-              Your Universal Standard Score
-            </h2>
-
-            <div className="flex items-end gap-8 mb-8">
+        <div className="grid gap-6 xl:grid-cols-[1.6fr_0.9fr] mb-8">
+          <div className="bg-white rounded-3xl border border-gray-200 p-8 shadow-sm">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <div className="text-7xl font-bold text-transparent bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text mb-2">
-                  {ussScore}
+                <p className="text-sm uppercase tracking-[0.24em] text-cyan-600 font-semibold mb-3">
+                  Universal Standard Score
+                </p>
+                <div className="flex items-center gap-4">
+                  <div>
+                    <p className="text-6xl font-semibold text-slate-900">{ussScore}</p>
+                    <p className="text-sm text-slate-500">out of 100</p>
+                  </div>
+                  <div className="flex-1">
+                    <progress
+                      className="progress-track mb-2"
+                      value={Math.min(Math.max(ussScore, 0), 100)}
+                      max={100}
+                      aria-label="USS progress"
+                    />
+                    <p className="text-sm text-slate-500">Current profile momentum</p>
+                  </div>
                 </div>
-                <p className="text-gray-600">out of 100</p>
               </div>
 
-              <div className="flex-1">
-                <progress
-                  className="progress-track mb-2"
-                  value={Math.min(Math.max(ussScore, 0), 100)}
-                  max={100}
-                  aria-label="USS progress"
-                />
-                <p className="text-gray-600 text-sm">Progress</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-3xl bg-cyan-50 p-5 border border-cyan-100">
+                  <p className="text-xs uppercase tracking-[0.24em] text-cyan-700 font-semibold mb-2">
+                    Confidence
+                  </p>
+                  <p className="text-3xl font-semibold text-cyan-900">{confidence}%</p>
+                </div>
+                <div className="rounded-3xl bg-slate-50 p-5 border border-slate-100">
+                  <p className="text-xs uppercase tracking-[0.24em] text-slate-500 font-semibold mb-2">
+                    Skills added
+                  </p>
+                  <p className="text-3xl font-semibold text-slate-900">{profile?.skills?.length || 0}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Next step</h2>
+                  <p className="text-sm text-gray-500">Keep your profile competitive.</p>
+                </div>
+                <Link
+                  href="/dashboard/student/edit-profile"
+                  className="inline-flex items-center gap-2 text-cyan-600 font-semibold hover:text-cyan-700"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  Update profile
+                </Link>
+              </div>
+              <div className="grid gap-4">
+                <div className="rounded-3xl bg-slate-50 p-4">
+                  <p className="text-sm text-slate-600">Add or verify your top skills to improve match quality.</p>
+                </div>
+                <div className="rounded-3xl bg-slate-50 p-4">
+                  <p className="text-sm text-slate-600">Share at least one active project with technologies and outcomes.</p>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-cyan-50 rounded-lg p-4 border border-cyan-200">
-                <p className="text-xs text-cyan-600 font-semibold mb-1">CONFIDENCE LEVEL</p>
-                <p className="text-2xl font-bold text-cyan-700">{confidence}%</p>
-              </div>
-              <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                <p className="text-xs text-blue-600 font-semibold mb-1">DATA COMPLETENESS</p>
-                <p className="text-2xl font-bold text-blue-700">
-                  {profile?.skills?.length || 0} Skills
+            <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Profile summary</h2>
+              <div className="space-y-3 text-sm text-slate-600">
+                <p>
+                  <span className="font-semibold text-slate-900">Institution:</span>{' '}
+                  {profile?.education?.institution || 'Not provided'}
+                </p>
+                <p>
+                  <span className="font-semibold text-slate-900">Branch:</span>{' '}
+                  {profile?.education?.branch || 'Not provided'}
+                </p>
+                <p>
+                  <span className="font-semibold text-slate-900">CGPA:</span>{' '}
+                  {profile?.cgpa?.value ?? 'N/A'}
+                </p>
+                <p>
+                  <span className="font-semibold text-slate-900">Social links:</span>{' '}
+                  {profile?.socialLinks?.length ? `${profile.socialLinks.length} added` : 'None yet'}
                 </p>
               </div>
             </div>
           </div>
-
-          {/* Quick Actions */}
-          <div className="bg-white rounded-xl border border-gray-200 p-8 flex flex-col">
-            <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
-            <div className="space-y-3 flex-1">
-              <Link
-                href="/dashboard/student/edit-profile"
-                className="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 rounded-lg font-medium transition"
-              >
-                <Edit2 className="w-4 h-4" />
-                Edit Profile
-              </Link>
-              <Link
-                href="/dashboard/student/assessments"
-                className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-2 rounded-lg font-medium hover:shadow-lg transition"
-              >
-                <Plus className="w-4 h-4" />
-                Take Assessment
-              </Link>
-            </div>
-          </div>
         </div>
 
-        {/* Score Breakdown */}
         {breakdown && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Score Breakdown</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <section className="mb-8">
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900">Detailed breakdown</h2>
+                <p className="text-sm text-gray-500">See the strengths that drive your USS score.</p>
+              </div>
+              <Link
+                href="/dashboard/student/assessments"
+                className="inline-flex items-center rounded-full bg-cyan-500 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-600"
+              >
+                Review assessments
+              </Link>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
               {[
-                {
-                  key: 'academics',
-                  label: 'Academics',
-                  icon: '📚',
-                },
-                {
-                  key: 'skills',
-                  label: 'Skills',
-                  icon: '💻',
-                },
-                {
-                  key: 'projects',
-                  label: 'Projects',
-                  icon: '🚀',
-                },
-                {
-                  key: 'experience',
-                  label: 'Experience',
-                  icon: '💼',
-                },
-                {
-                  key: 'behavioral',
-                  label: 'Professional',
-                  icon: '🤝',
-                },
+                { label: 'Academics', key: 'academics', icon: '📚' },
+                { label: 'Skills', key: 'skills', icon: '💻' },
+                { label: 'Projects', key: 'projects', icon: '🚀' },
+                { label: 'Experience', key: 'experience', icon: '💼' },
+                { label: 'Professional', key: 'behavioral', icon: '🤝' },
               ].map((item) => (
                 <ScoreCard
                   key={item.key}
@@ -177,92 +195,109 @@ export default function StudentDashboard() {
                 />
               ))}
             </div>
-          </div>
+          </section>
         )}
 
-        {/* Improvement Suggestions */}
         {suggestions.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">📈 Improvement Suggestions</h2>
+          <section className="bg-white rounded-3xl border border-gray-200 p-8 shadow-sm mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Improvement opportunities</h2>
             <div className="space-y-4">
               {suggestions.map((suggestion, idx) => (
-                <div
-                  key={idx}
-                  className="p-4 bg-gray-50 rounded-lg border-l-4 border-cyan-500"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-gray-900">{suggestion.category}</h3>
-                    <span className="bg-cyan-100 text-cyan-700 text-xs font-semibold px-2 py-1 rounded">
-                      +{suggestion.potentialImpact} points
-                    </span>
-                  </div>
-                  <p className="text-gray-700">{suggestion.suggestion}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Profile Info Cards */}
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Skills Section */}
-          <div className="bg-white rounded-xl border border-gray-200 p-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Skills</h3>
-            {profile?.skills && profile.skills.length > 0 ? (
-              <div className="space-y-3">
-                {profile.skills.map((skill: any, idx: number) => (
-                  <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">{skill.name}</p>
-                      <p className="text-xs text-gray-500 capitalize">{skill.proficiency}</p>
-                    </div>
-                    {skill.verified && (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                        Verified
+                <div key={idx} className="rounded-3xl bg-slate-50 p-5 border border-slate-100">
+                  <div className="flex items-center justify-between gap-4 mb-3">
+                    <p className="text-base font-semibold text-slate-900">{suggestion.category}</p>
+                    {suggestion.potentialImpact && (
+                      <span className="rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold text-cyan-700">
+                        +{suggestion.potentialImpact} pts
                       </span>
                     )}
                   </div>
-                ))}
+                  <p className="text-sm text-slate-600">{suggestion.suggestion}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+          <div className="bg-white rounded-3xl border border-gray-200 p-8 shadow-sm">
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Core strengths</h2>
+                <p className="text-sm text-gray-500">Your highest impact skills and projects.</p>
               </div>
-            ) : (
-              <p className="text-gray-600 text-center py-8">No skills added yet</p>
-            )}
-            <Link
-              href="/dashboard/student/edit-profile"
-              className="mt-4 w-full text-center py-2 border border-gray-300 rounded-lg text-gray-900 font-medium hover:bg-gray-50 transition"
-            >
-              Add Skills
-            </Link>
+              <Link href="/dashboard/student/edit-profile" className="text-cyan-600 font-semibold hover:text-cyan-700">
+                Add more
+              </Link>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-[0.2em] mb-4">Skills</h3>
+                {profile?.skills && profile.skills.length > 0 ? (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {profile.skills.map((skill: any, idx: number) => (
+                      <div key={idx} className="rounded-3xl bg-slate-50 p-4 border border-slate-100">
+                        <p className="font-semibold text-gray-900">{skill.name}</p>
+                        <p className="text-xs text-gray-500 capitalize mt-1">{skill.proficiency}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-600">No skills added yet.</p>
+                )}
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-[0.2em] mb-4">Projects</h3>
+                {profile?.projects && profile.projects.length > 0 ? (
+                  <div className="space-y-3">
+                    {profile.projects.slice(0, 3).map((project: any, idx: number) => (
+                      <div key={idx} className="rounded-3xl bg-slate-50 p-4 border border-slate-100">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-gray-900">{project.title}</p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {project.description || 'Project details not available.'}
+                            </p>
+                          </div>
+                          {project.githubLink && <ExternalLink className="w-4 h-4 text-cyan-600" />}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-3">
+                          {(Array.isArray(project.technologies)
+                            ? project.technologies.join(', ')
+                            : project.technologies) || 'No technologies listed'}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-600">No recent projects added yet.</p>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Recent Projects */}
-          <div className="bg-white rounded-xl border border-gray-200 p-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Projects</h3>
-            {profile?.projects && profile.projects.length > 0 ? (
-              <div className="space-y-3">
-                {profile.projects.slice(0, 3).map((project: any, idx: number) => (
-                  <div key={idx} className="p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-start justify-between mb-2">
-                      <p className="font-medium text-gray-900">{project.title}</p>
-                      {project.githubLink && (
-                        <ExternalLink className="w-4 h-4 text-cyan-600" />
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      {project.technologies.join(', ')}
-                    </p>
-                  </div>
-                ))}
+          <div className="bg-white rounded-3xl border border-gray-200 p-8 shadow-sm">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Profile health</h2>
+            <div className="space-y-4">
+              <div className="rounded-3xl bg-cyan-50 p-5 border border-cyan-100">
+                <p className="text-sm text-cyan-700 font-semibold">Education</p>
+                <p className="mt-2 text-gray-900 font-semibold">{profile?.education?.institution || 'No institution set'}</p>
+                <p className="text-sm text-slate-500">{profile?.education?.branch || 'Branch not available'}</p>
               </div>
-            ) : (
-              <p className="text-gray-600 text-center py-8">No projects added yet</p>
-            )}
-            <Link
-              href="/dashboard/student/edit-profile"
-              className="mt-4 w-full text-center py-2 border border-gray-300 rounded-lg text-gray-900 font-medium hover:bg-gray-50 transition"
-            >
-              Add Projects
-            </Link>
+              <div className="rounded-3xl bg-slate-50 p-5 border border-slate-100">
+                <p className="text-sm text-slate-700 font-semibold">Academic score</p>
+                <p className="mt-2 text-gray-900 font-semibold">{profile?.cgpa?.value ?? 'N/A'} / 10</p>
+                {profile?.cgpa?.verified && <p className="text-sm text-green-600 mt-1">CGPA verified</p>}
+              </div>
+              <div className="rounded-3xl bg-slate-50 p-5 border border-slate-100">
+                <p className="text-sm text-slate-700 font-semibold">Social links</p>
+                <p className="mt-2 text-gray-900 font-semibold">
+                  {profile?.socialLinks?.length ? `${profile.socialLinks.length} link(s)` : 'None yet'}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

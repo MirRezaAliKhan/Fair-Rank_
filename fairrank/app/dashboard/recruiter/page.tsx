@@ -27,7 +27,6 @@ export default function RecruiterDashboard() {
 
         const token = localStorage.getItem('token');
 
-        // Fetch roles
         const rolesRes = await axios.get(`/api/recruiters/roles?recruiterId=${user.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -35,7 +34,7 @@ export default function RecruiterDashboard() {
         if (rolesRes.data.success) {
           setRoles(rolesRes.data.data);
           if (rolesRes.data.data.length > 0) {
-            setSelectedRole(rolesRes.data.data[0]._id);
+            setSelectedRole(rolesRes.data.data[0].id);
           }
         }
       } catch (error) {
@@ -48,27 +47,28 @@ export default function RecruiterDashboard() {
     fetchData();
   }, []);
 
-  // Fetch applications when selectedRole changes
   useEffect(() => {
-    if (selectedRole) {
-      const fetchApplications = async () => {
-        try {
-          const token = localStorage.getItem('token');
-          const res = await axios.get(
-            `/api/applications?roleId=${selectedRole}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-
-          if (res.data.success) {
-            setApplications(res.data.data);
-          }
-        } catch (error) {
-          console.error('Error fetching applications:', error);
-        }
-      };
-
-      fetchApplications();
+    if (!selectedRole) {
+      setApplications([]);
+      return;
     }
+
+    const fetchApplications = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`/api/applications?roleId=${selectedRole}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.data.success) {
+          setApplications(res.data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching applications:', error);
+      }
+    };
+
+    fetchApplications();
   }, [selectedRole]);
 
   if (loading) {
@@ -87,158 +87,174 @@ export default function RecruiterDashboard() {
       <Navbar isLoggedIn userRole="recruiter" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Welcome Header */}
-        <div className="flex justify-between items-start mb-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between mb-8">
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-2">
               Welcome back, {user?.name}! 👋
             </h1>
-            <p className="text-gray-600">Manage your job roles and review candidates</p>
+            <p className="text-gray-600">Manage your roles, discover the best candidates, and move decisions faster.</p>
           </div>
           <Link
             href="/dashboard/recruiter/create-role"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition"
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:opacity-95 transition"
           >
-            <Plus className="w-5 h-5" />
-            Create New Role
+            <Plus className="w-4 h-4" />
+            Create Role
           </Link>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-sm font-semibold text-gray-600 uppercase">Active Roles</h3>
-              <BarChart3 className="text-cyan-600" />
+        <div className="grid gap-6 md:grid-cols-3 mb-8">
+          <div className="rounded-3xl bg-white border border-gray-200 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-gray-500">Active roles</p>
+                <p className="mt-3 text-3xl font-semibold text-gray-900">{roles.length}</p>
+              </div>
+              <BarChart3 className="text-cyan-500" />
             </div>
-            <p className="text-3xl font-bold text-gray-900">{roles.length}</p>
+            <p className="text-sm text-gray-500">Keep your open searches updated so candidates stay engaged.</p>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-sm font-semibold text-gray-600 uppercase">Total Applications</h3>
-              <Users className="text-blue-600" />
+          <div className="rounded-3xl bg-white border border-gray-200 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-gray-500">Applications</p>
+                <p className="mt-3 text-3xl font-semibold text-gray-900">{applications.length}</p>
+              </div>
+              <Users className="text-blue-500" />
             </div>
-            <p className="text-3xl font-bold text-gray-900">{applications.length}</p>
+            <p className="text-sm text-gray-500">Applications are ranked automatically by USS for fast review.</p>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-sm font-semibold text-gray-600 uppercase">Shortlisted</h3>
-              <Settings className="text-green-600" />
+          <div className="rounded-3xl bg-white border border-gray-200 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-gray-500">Shortlisted</p>
+                <p className="mt-3 text-3xl font-semibold text-gray-900">{applications.filter((app: any) => app.status === 'shortlisted').length}</p>
+              </div>
+              <Settings className="text-green-500" />
             </div>
-            <p className="text-3xl font-bold text-gray-900">
-              {applications.filter((app: any) => app.status === 'shortlisted').length}
-            </p>
+            <p className="text-sm text-gray-500">Track applications you've marked for follow up.</p>
           </div>
         </div>
 
-        {/* Roles Section */}
-        <div className="grid lg:grid-cols-4 gap-6 mb-8">
-          <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="font-semibold text-gray-900 mb-4">Your Roles</h3>
-            <div className="space-y-2">
+        <div className="grid gap-6 lg:grid-cols-[0.9fr_1.6fr] mb-8">
+          <aside className="rounded-3xl bg-white border border-gray-200 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Roles</h2>
+                <p className="text-sm text-gray-500">Select a role to view candidate rankings.</p>
+              </div>
+              <Link href="/dashboard/recruiter/create-role" className="text-cyan-600 text-sm font-semibold hover:text-cyan-700">
+                New role
+              </Link>
+            </div>
+            <div className="space-y-3">
               {roles.length > 0 ? (
                 roles.map((role: any) => (
                   <button
-                    key={role._id}
-                    onClick={() => setSelectedRole(role._id)}
-                    className={`w-full text-left p-3 rounded-lg font-medium transition ${
-                      selectedRole === role._id
-                        ? 'bg-cyan-50 text-cyan-700 border border-cyan-300'
-                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                    key={role.id}
+                    onClick={() => setSelectedRole(role.id)}
+                    className={`w-full rounded-3xl border px-4 py-4 text-left transition ${
+                      selectedRole === role.id
+                        ? 'border-cyan-300 bg-cyan-50 text-cyan-900 shadow-sm'
+                        : 'border-gray-200 bg-white text-gray-800 hover:border-gray-300 hover:bg-gray-50'
                     }`}
                   >
-                    {role.title}
+                    <p className="font-semibold">{role.title}</p>
+                    <p className="text-sm text-gray-500 mt-1 line-clamp-2">{role.description || 'No description provided.'}</p>
                   </button>
                 ))
               ) : (
-                <p className="text-gray-500 text-sm text-center py-8">
-                  No roles yet. Create one!
-                </p>
+                <p className="text-gray-500">No roles have been created yet.</p>
               )}
             </div>
-          </div>
+          </aside>
 
-          {/* Candidates List */}
-          <div className="lg:col-span-3 bg-white rounded-xl border border-gray-200 p-8">
-            <h3 className="text-xl font-semibold text-gray-900 mb-6">
-              {selectedRole ? 'Ranked Candidates' : 'Select a role to view candidates'}
-            </h3>
+          <section className="rounded-3xl bg-white border border-gray-200 p-6 shadow-sm">
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">{selectedRole ? 'Candidates' : 'Choose a role'}</h2>
+                <p className="text-sm text-gray-500">
+                  {selectedRole
+                    ? 'Review the top applications matched to this role.'
+                    : 'Select a job role on the left to display results.'}
+                </p>
+              </div>
+              {selectedRole && (
+                <span className="rounded-full bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-700">
+                  {applications.length} applications
+                </span>
+              )}
+            </div>
 
             {selectedRole && applications.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {applications.map((app: any) => (
-                  <div
-                    key={app._id}
-                    className="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition"
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                          #{app.rank}
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900">Candidate</h4>
-                          <p className="text-sm text-gray-600">Applied {new Date(app.appliedAt).toLocaleDateString()}</p>
-                        </div>
+                  <div key={app.id} className="rounded-3xl border border-gray-200 p-6 hover:shadow-lg transition">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="text-sm text-gray-500">Rank #{app.rank}</p>
+                        <h3 className="text-lg font-semibold text-gray-900">{app.student?.name || 'Candidate name'}</h3>
+                        <p className="text-sm text-gray-500 mt-1">Applied {new Date(app.appliedAt).toLocaleDateString()}</p>
                       </div>
-
-                      <div className="text-right">
-                        <div className="text-3xl font-bold text-transparent bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text">
-                          {app.score}
+                      <div className="flex items-center gap-4">
+                        <div className="rounded-3xl bg-cyan-50 px-4 py-3 text-center">
+                          <p className="text-sm text-cyan-700">Score</p>
+                          <p className="text-2xl font-semibold text-cyan-900">{app.score}</p>
                         </div>
-                        <p className="text-xs text-gray-500">USS Score</p>
+                        <div className="rounded-3xl bg-slate-50 px-4 py-3 text-center">
+                          <p className="text-sm text-slate-500">Status</p>
+                          <p className="text-sm font-semibold text-slate-900 capitalize">{app.status || 'applied'}</p>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-5 gap-2 mb-4">
+                    <div className="mt-5 grid gap-2 sm:grid-cols-5">
                       {[
                         { label: 'Academics', score: app.scoreBreakdown.academics },
                         { label: 'Skills', score: app.scoreBreakdown.skills },
                         { label: 'Projects', score: app.scoreBreakdown.projects },
                         { label: 'Experience', score: app.scoreBreakdown.experience },
                         { label: 'Professional', score: app.scoreBreakdown.behavioral },
-                      ].map((cat, i) => (
-                        <div key={i} className="text-center p-2 bg-gray-50 rounded">
-                          <p className="text-xs font-medium text-gray-600">{cat.label}</p>
-                          <p className="text-lg font-bold text-gray-900">{cat.score}</p>
+                      ].map((metric, index) => (
+                        <div key={index} className="rounded-2xl bg-slate-50 p-3 text-center">
+                          <p className="text-[10px] uppercase tracking-[0.24em] text-gray-500">{metric.label}</p>
+                          <p className="mt-2 text-lg font-semibold text-gray-900">{metric.score ?? 0}</p>
                         </div>
                       ))}
                     </div>
 
-                    <div className="flex gap-2">
-                      <label htmlFor={`application-status-${app._id}`} className="sr-only">
-                        Application status
-                      </label>
+                    <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-between">
                       <select
-                        id={`application-status-${app._id}`}
                         aria-label="Application status"
                         value={app.status}
                         onChange={() => {
                           // Handle status update
                         }}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                        className="rounded-3xl border border-gray-300 px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                       >
                         <option value="applied">Applied</option>
-                        <option value="shortlisted">Shortlist</option>
-                        <option value="rejected">Reject</option>
-                        <option value="selected">Select</option>
+                        <option value="shortlisted">Shortlisted</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="selected">Selected</option>
                       </select>
                       <Link
-                        href={`/dashboard/recruiter/candidate/${app._id}`}
-                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-900 font-medium transition"
+                        href={`/dashboard/recruiter/candidate/${app.id}`}
+                        className="inline-flex items-center justify-center rounded-3xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800"
                       >
-                        View Profile
+                        View candidate
                       </Link>
                     </div>
                   </div>
                 ))}
               </div>
             ) : selectedRole ? (
-              <p className="text-gray-600 text-center py-12">No applications for this role yet</p>
+              <div className="rounded-3xl border border-dashed border-gray-300 bg-slate-50 p-10 text-center text-gray-600">
+                No applications submitted for this role yet.
+              </div>
             ) : null}
-          </div>
+          </section>
         </div>
       </div>
     </main>
