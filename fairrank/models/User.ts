@@ -1,45 +1,15 @@
-import mongoose from 'mongoose';
+import prisma from '@/lib/db';
 
-const UserSchema = new mongoose.Schema(
-  {
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    name: {
-      type: String,
-      required: true,
-    },
-    role: {
-      type: String,
-      enum: ['student', 'recruiter'],
-      required: true,
-    },
-    avatar: {
-      type: String,
-      default: null,
-    },
-    verified: {
-      type: Boolean,
-      default: false,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now,
-    },
+export const User = {
+  findOne: (where: any) => {
+    if (where.email) {
+      return prisma.user.findUnique({ where: { email: where.email } });
+    }
+    return prisma.user.findFirst({ where });
   },
-  { timestamps: true }
-);
-
-export const User = mongoose.models.User || mongoose.model('User', UserSchema);
+  create: (data: any) => prisma.user.create({ data }),
+  deleteMany: (where: any = {}) => prisma.user.deleteMany({ where }),
+  insertMany: async (items: any[]) => {
+    return Promise.all(items.map((item) => prisma.user.create({ data: item })));
+  },
+};

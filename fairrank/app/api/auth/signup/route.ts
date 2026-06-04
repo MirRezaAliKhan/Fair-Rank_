@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import { User } from '@/models/User';
-import { StudentProfile } from '@/models/StudentProfile';
+import prisma from '@/lib/db';
 import { hashPassword, generateToken } from '@/lib/auth';
+import { stringifyJsonFields } from '@/lib/jsonHelpers';
 
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect();
-
     const body = await request.json();
     const { email, password, name, role } = body;
 
-    // Validate input
     if (!email || !password || !name || !role) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -26,8 +22,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return NextResponse.json(
         { error: 'Email already in use' },
@@ -35,30 +30,62 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password and create user
     const hashedPassword = await hashPassword(password);
-    const user = await User.create({
-      email,
-      password: hashedPassword,
-      name,
-      role,
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name,
+        role,
+      },
     });
 
-    // Create student profile if role is student
     if (role === 'student') {
-      await StudentProfile.create({
-        userId: user._id,
+      await prisma.studentProfile.create({
+        data: stringifyJsonFields(
+          {
+            userId: user.id,
+            cgpa: { value: 0, verified: false },
+            skills: [],
+            projects: [],
+            experience: [],
+            education: {},
+            socialLinks: {},
+            uss: {
+              score: 0,
+              confidence: 0,
+              breakdown: {
+                academics: { score: 0, weight: 0.2 },
+                skills: { score: 0, weight: 0.3 },
+                projects: { score: 0, weight: 0.25 },
+                experience: { score: 0, weight: 0.15 },
+                behavioral: { score: 0, weight: 0.1 },
+              },
+              lastUpdated: new Date(),
+            },
+            improvementSuggestions: [],
+          },
+          [
+            'cgpa',
+            'skills',
+            'projects',
+            'experience',
+            'education',
+            'socialLinks',
+            'uss',
+            'improvementSuggestions',
+          ]
+        ),
       });
     }
 
-    // Generate token
-    const token = generateToken(user._id.toString(), role);
+    const token = generateToken(user.id, role);
 
     return NextResponse.json({
       success: true,
       token,
       user: {
-        id: user._id,
+        id: user.id,
         email: user.email,
         name: user.name,
         role: user.role,

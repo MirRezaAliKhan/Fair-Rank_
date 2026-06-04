@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Trash2 } from 'lucide-react';
@@ -87,13 +87,6 @@ export default function EditProfilePage() {
         ...formData.projects,
         { title: '', description: '', technologies: [], githubLink: '', liveLink: '', highlights: [] },
       ],
-    });
-  };
-
-  const addExperience = () => {
-    setFormData({
-      ...formData,
-      experience: [...formData.experience, { title: '', company: '', duration: '', description: '' }],
     });
   };
 

@@ -1,27 +1,37 @@
 /**
  * Demo Data Seed Script
- * Run with: node scripts/seed.js
- * 
- * This creates sample students and recruiters for testing the system
+ * Run with: npm run seed
+ *
+ * This creates sample students and a recruiter for testing the system
  */
 
-import mongoose from 'mongoose';
-import { User } from '../models/User';
-import { StudentProfile } from '../models/StudentProfile';
-import { hashPassword } from '../lib/auth';
+import prisma from '@/lib/db';
+import { hashPassword } from '@/lib/auth';
+import { stringifyJsonFields } from '@/lib/jsonHelpers';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/fairrank';
+const studentProfileFields = [
+  'cgpa',
+  'skills',
+  'projects',
+  'experience',
+  'education',
+  'socialLinks',
+  'uss',
+  'improvementSuggestions',
+];
 
 async function seedDatabase() {
   try {
-    await mongoose.connect(MONGODB_URI);
-    console.log('Connected to MongoDB');
+    await prisma.$connect();
 
-    // Clear existing data
-    await User.deleteMany({});
-    await StudentProfile.deleteMany({});
+    console.log('Connected to the database');
 
-    // Create demo students
+    await prisma.application.deleteMany();
+    await prisma.skillAssessment.deleteMany();
+    await prisma.studentProfile.deleteMany();
+    await prisma.jobRole.deleteMany();
+    await prisma.user.deleteMany();
+
     const students = [
       {
         name: 'Raj Patel',
@@ -43,149 +53,209 @@ async function seedDatabase() {
       },
     ];
 
-    const createdUsers = await User.insertMany(students);
+    const createdUsers = [];
+    for (const student of students) {
+      const createdUser = await prisma.user.create({
+        data: student,
+      });
+      createdUsers.push(createdUser);
+    }
+
     console.log(`Created ${createdUsers.length} demo students`);
 
-    // Create student profiles with sample data
     const profiles = [
-      {
-        userId: createdUsers[0]._id,
-        cgpa: { value: 8.5, verified: true },
-        skills: [
-          { name: 'React', proficiency: 'advanced', verified: true, assessmentScore: 85 },
-          { name: 'Node.js', proficiency: 'advanced', verified: true, assessmentScore: 80 },
-          { name: 'MongoDB', proficiency: 'intermediate', verified: false },
-        ],
-        projects: [
-          {
-            title: 'E-commerce Platform',
-            description: 'Full-stack e-commerce with React and Node.js',
-            technologies: ['React', 'Node.js', 'MongoDB', 'Stripe'],
-            githubLink: 'https://github.com/rajpatel/ecommerce',
-            liveLink: 'https://ecommerce-demo.com',
-            highlights: ['REST API', 'Authentication', 'Payment Integration'],
+      stringifyJsonFields(
+        {
+          userId: createdUsers[0].id,
+          cgpa: { value: 8.5, verified: true },
+          skills: [
+            { name: 'React', proficiency: 'advanced', verified: true, assessmentScore: 85 },
+            { name: 'Node.js', proficiency: 'advanced', verified: true, assessmentScore: 80 },
+            { name: 'SQL', proficiency: 'intermediate', verified: false },
+          ],
+          projects: [
+            {
+              title: 'E-commerce Platform',
+              description: 'Full-stack e-commerce with React and Node.js',
+              technologies: ['React', 'Node.js', 'SQLite', 'Stripe'],
+              githubLink: 'https://github.com/rajpatel/ecommerce',
+              liveLink: 'https://ecommerce-demo.com',
+              highlights: ['REST API', 'Authentication', 'Payment Integration'],
+            },
+            {
+              title: 'Todo App',
+              description: 'Real-time todo application with WebSockets',
+              technologies: ['React', 'Express', 'Socket.io'],
+              githubLink: 'https://github.com/rajpatel/todo-app',
+              highlights: ['Real-time Sync', 'PWA'],
+            },
+          ],
+          experience: [
+            {
+              title: 'Junior Developer',
+              company: 'TechStartup Inc.',
+              duration: '6 months',
+              description: 'Developed React components and fixed bugs',
+            },
+          ],
+          education: {
+            institution: 'Indian Institute of Technology',
+            branch: 'Computer Science',
+            graduationYear: 2024,
           },
-          {
-            title: 'Todo App',
-            description: 'Real-time todo application with WebSockets',
-            technologies: ['React', 'Express', 'Socket.io'],
-            githubLink: 'https://github.com/rajpatel/todo-app',
-            highlights: ['Real-time Sync', 'PWA'],
+          socialLinks: {
+            github: 'https://github.com/rajpatel',
+            linkedin: 'https://linkedin.com/in/rajpatel',
+            portfolio: 'https://rajpatel.dev',
           },
-        ],
-        experience: [
-          {
-            title: 'Junior Developer',
-            company: 'TechStartup Inc.',
-            duration: '6 months',
-            description: 'Developed React components and fixed bugs',
+          uss: {
+            score: 0,
+            confidence: 0,
+            breakdown: {
+              academics: { score: 0, weight: 0.2 },
+              skills: { score: 0, weight: 0.3 },
+              projects: { score: 0, weight: 0.25 },
+              experience: { score: 0, weight: 0.15 },
+              behavioral: { score: 0, weight: 0.1 },
+            },
+            lastUpdated: new Date(),
           },
-        ],
-        education: {
-          institution: 'Indian Institute of Technology',
-          branch: 'Computer Science',
-          graduationYear: 2024,
+          improvementSuggestions: [],
         },
-        socialLinks: {
-          github: 'https://github.com/rajpatel',
-          linkedin: 'https://linkedin.com/in/rajpatel',
-          portfolio: 'https://rajpatel.dev',
+        studentProfileFields
+      ),
+      stringifyJsonFields(
+        {
+          userId: createdUsers[1].id,
+          cgpa: { value: 7.2, verified: true },
+          skills: [
+            { name: 'Python', proficiency: 'advanced', verified: true, assessmentScore: 90 },
+            { name: 'Machine Learning', proficiency: 'intermediate', verified: false },
+            { name: 'Data Analysis', proficiency: 'intermediate', verified: false },
+          ],
+          projects: [
+            {
+              title: 'ML Model for Sentiment Analysis',
+              description: 'Using NLP to analyze customer reviews',
+              technologies: ['Python', 'TensorFlow', 'Pandas'],
+              githubLink: 'https://github.com/priyasingh/ml-sentiment',
+              highlights: ['95% Accuracy', 'Real-world Data'],
+            },
+            {
+              title: 'Data Visualization Dashboard',
+              description: 'Interactive dashboard for data insights',
+              technologies: ['Python', 'Matplotlib', 'Streamlit'],
+              highlights: ['Interactive', 'Real-time Updates'],
+            },
+            {
+              title: 'Web Scraper',
+              description: 'Scraping and analyzing news data',
+              technologies: ['Python', 'BeautifulSoup', 'Selenium'],
+              liveLink: 'https://news-analyzer-demo.com',
+              highlights: ['100K+ Articles', 'Daily Updates'],
+            },
+          ],
+          experience: [
+            {
+              title: 'Data Intern',
+              company: 'Analytics Corp',
+              duration: '3 months',
+              description: 'Analyzed data and created reports',
+            },
+          ],
+          education: {
+            institution: 'Delhi University',
+            branch: 'Statistics',
+            graduationYear: 2024,
+          },
+          socialLinks: {
+            github: 'https://github.com/priyasingh',
+            linkedin: 'https://linkedin.com/in/priyasingh',
+          },
+          uss: {
+            score: 0,
+            confidence: 0,
+            breakdown: {
+              academics: { score: 0, weight: 0.2 },
+              skills: { score: 0, weight: 0.3 },
+              projects: { score: 0, weight: 0.25 },
+              experience: { score: 0, weight: 0.15 },
+              behavioral: { score: 0, weight: 0.1 },
+            },
+            lastUpdated: new Date(),
+          },
+          improvementSuggestions: [],
         },
-      },
-      {
-        userId: createdUsers[1]._id,
-        cgpa: { value: 7.2, verified: true },
-        skills: [
-          { name: 'Python', proficiency: 'advanced', verified: true, assessmentScore: 90 },
-          { name: 'Machine Learning', proficiency: 'intermediate', verified: false },
-          { name: 'Data Analysis', proficiency: 'intermediate', verified: false },
-        ],
-        projects: [
-          {
-            title: 'ML Model for Sentiment Analysis',
-            description: 'Using NLP to analyze customer reviews',
-            technologies: ['Python', 'TensorFlow', 'Pandas'],
-            githubLink: 'https://github.com/priyasingh/ml-sentiment',
-            highlights: ['95% Accuracy', 'Real-world Data'],
+        studentProfileFields
+      ),
+      stringifyJsonFields(
+        {
+          userId: createdUsers[2].id,
+          cgpa: { value: 9.1, verified: true },
+          skills: [
+            { name: 'Java', proficiency: 'expert', verified: true, assessmentScore: 95 },
+            { name: 'System Design', proficiency: 'advanced', verified: false },
+            { name: 'Databases', proficiency: 'advanced', verified: false },
+          ],
+          projects: [
+            {
+              title: 'Distributed Cache System',
+              description: 'High-performance cache similar to Redis',
+              technologies: ['Java', 'Netty', 'Redis'],
+              githubLink: 'https://github.com/arjunkumar/cache-system',
+              highlights: ['1M+ req/s', 'Production Ready'],
+            },
+          ],
+          experience: [
+            {
+              title: 'Software Engineer',
+              company: 'Big Tech Co',
+              duration: '1 year',
+              description: 'Built backend services and optimized queries',
+            },
+          ],
+          education: {
+            institution: 'BITS Pilani',
+            branch: 'Computer Science',
+            graduationYear: 2024,
           },
-          {
-            title: 'Data Visualization Dashboard',
-            description: 'Interactive dashboard for data insights',
-            technologies: ['Python', 'Matplotlib', 'Streamlit'],
-            highlights: ['Interactive', 'Real-time Updates'],
+          socialLinks: {
+            github: 'https://github.com/arjunkumar',
+            linkedin: 'https://linkedin.com/in/arjunkumar',
           },
-          {
-            title: 'Web Scraper',
-            description: 'Scraping and analyzing news data',
-            technologies: ['Python', 'BeautifulSoup', 'Selenium'],
-            liveLink: 'https://news-analyzer-demo.com',
-            highlights: ['100K+ Articles', 'Daily Updates'],
+          uss: {
+            score: 0,
+            confidence: 0,
+            breakdown: {
+              academics: { score: 0, weight: 0.2 },
+              skills: { score: 0, weight: 0.3 },
+              projects: { score: 0, weight: 0.25 },
+              experience: { score: 0, weight: 0.15 },
+              behavioral: { score: 0, weight: 0.1 },
+            },
+            lastUpdated: new Date(),
           },
-        ],
-        experience: [
-          {
-            title: 'Data Intern',
-            company: 'Analytics Corp',
-            duration: '3 months',
-            description: 'Analyzed data and created reports',
-          },
-        ],
-        education: {
-          institution: 'Delhi University',
-          branch: 'Statistics',
-          graduationYear: 2024,
+          improvementSuggestions: [],
         },
-        socialLinks: {
-          github: 'https://github.com/priyasingh',
-          linkedin: 'https://linkedin.com/in/priyasingh',
-        },
-      },
-      {
-        userId: createdUsers[2]._id,
-        cgpa: { value: 9.1, verified: true },
-        skills: [
-          { name: 'Java', proficiency: 'expert', verified: true, assessmentScore: 95 },
-          { name: 'System Design', proficiency: 'advanced', verified: false },
-          { name: 'Databases', proficiency: 'advanced', verified: false },
-        ],
-        projects: [
-          {
-            title: 'Distributed Cache System',
-            description: 'High-performance cache similar to Redis',
-            technologies: ['Java', 'Netty', 'Redis'],
-            githubLink: 'https://github.com/arjunkumar/cache-system',
-            highlights: ['1M+ req/s', 'Production Ready'],
-          },
-        ],
-        experience: [
-          {
-            title: 'Software Engineer',
-            company: 'Big Tech Co',
-            duration: '1 year',
-            description: 'Built backend services and optimized queries',
-          },
-        ],
-        education: {
-          institution: 'BITS Pilani',
-          branch: 'Computer Science',
-          graduationYear: 2024,
-        },
-        socialLinks: {
-          github: 'https://github.com/arjunkumar',
-          linkedin: 'https://linkedin.com/in/arjunkumar',
-        },
-      },
+        studentProfileFields
+      ),
     ];
 
-    await StudentProfile.insertMany(profiles);
+    for (const profile of profiles) {
+      await prisma.studentProfile.create({
+        data: profile,
+      });
+    }
+
     console.log(`Created ${profiles.length} demo student profiles`);
 
-    // Create demo recruiter
-    const recruiter = await User.create({
-      name: 'Hiring Manager',
-      email: 'recruiter@example.com',
-      password: await hashPassword('password123'),
-      role: 'recruiter',
+    await prisma.user.create({
+      data: {
+        name: 'Hiring Manager',
+        email: 'recruiter@example.com',
+        password: await hashPassword('password123'),
+        role: 'recruiter',
+      },
     });
 
     console.log('Created demo recruiter');
@@ -198,9 +268,11 @@ async function seedDatabase() {
     console.log('Recruiter:');
     console.log('  - recruiter@example.com / password123');
 
+    await prisma.$disconnect();
     process.exit(0);
   } catch (error) {
     console.error('Error seeding database:', error);
+    await prisma.$disconnect();
     process.exit(1);
   }
 }

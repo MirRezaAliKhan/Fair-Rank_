@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import { Application } from '@/models/Application';
-import { StudentProfile } from '@/models/StudentProfile';
-import { JobRole } from '@/models/JobRole';
+import prisma from '@/lib/db';
 import { calculateUSSWithCustomWeights } from '@/lib/scoring';
+import { parseJsonFields } from '@/lib/jsonHelpers';
 
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect();
-
     const body = await request.json();
     const { roleId, studentId, recruiterId } = body;
 
@@ -19,8 +15,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if already applied
-    const existingApp = await Application.findOne({ roleId, studentId });
+    const existingApp = await prisma.application.findFirst({
+      where: { roleId, studentId },
+    });
     if (existingApp) {
       return NextResponse.json(
         { error: 'Already applied' },
@@ -28,9 +25,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get student profile and role
-    const studentProfile = await StudentProfile.findById(studentId);
-    const role = await JobRole.findById(roleId);
+    const studentProfile = await prisma.studentProfile.findUnique({
+      where: { id: studentId },
+    });
+    const role = await prisma.jobRole.findUnique({
+      where: { id: roleId },
+    });
 
     if (!studentProfile || !role) {
       return NextResponse.json(
@@ -39,35 +39,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate score with recruiter's weights
+    const parsedStudentProfile = parseJsonFields(studentProfile, [
+      'cgpa',
+      'skills',
+      'projects',
+      'experience',
+      'socialLinks',
+    ]) as any;
+    const parsedRole = parseJsonFields(role, ['weights']) as any;
+
     const ussData = {
-      cgpa: studentProfile.cgpa,
-      skills: studentProfile.skills,
-      projects: studentProfile.projects,
-      experience: studentProfile.experience,
-      socialLinks: studentProfile.socialLinks,
+      cgpa: parsedStudentProfile.cgpa,
+      skills: parsedStudentProfile.skills,
+      projects: parsedStudentProfile.projects,
+      experience: parsedStudentProfile.experience,
+      socialLinks: parsedStudentProfile.socialLinks,
     };
 
-    const ussResult = calculateUSSWithCustomWeights(ussData, role.weights);
+    const ussResult = calculateUSSWithCustomWeights(ussData, parsedRole.weights);
 
-    // Create application
-    const application = await Application.create({
-      roleId,
-      studentId,
-      recruiterId,
-      score: ussResult.score,
-      scoreBreakdown: {
-        academics: ussResult.breakdown.academics.score,
-        skills: ussResult.breakdown.skills.score,
-        projects: ussResult.breakdown.projects.score,
-        experience: ussResult.breakdown.experience.score,
-        behavioral: ussResult.breakdown.behavioral.score,
+    const application = await prisma.application.create({
+      data: {
+        roleId,
+        studentId,
+        recruiterId,
+        score: ussResult.score,
+        scoreBreakdown: JSON.stringify({
+          academics: ussResult.breakdown.academics.score,
+          skills: ussResult.breakdown.skills.score,
+          projects: ussResult.breakdown.projects.score,
+          experience: ussResult.breakdown.experience.score,
+          behavioral: ussResult.breakdown.behavioral.score,
+        }),
+        status: 'applied',
+        appliedAt: new Date(),
       },
     });
 
     return NextResponse.json({
       success: true,
-      data: application,
+      data: parseJsonFields(application, ['scoreBreakdown']),
     });
   } catch (error) {
     console.error('Error creating application:', error);
@@ -80,30 +91,38 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    await dbConnect();
-
     const roleId = request.nextUrl.searchParams.get('roleId');
     const recruiterId = request.nextUrl.searchParams.get('recruiterId');
 
-    let query: any = {};
+    const where: any = {};
+    if (roleId) where.roleId = roleId;
+    if (recruiterId) where.recruiterId = recruiterId;
 
-    if (roleId) query.roleId = roleId;
-    if (recruiterId) query.recruiterId = recruiterId;
+    const applications = await prisma.application.findMany({
+      where,
+      include: { student: true },
+      orderBy: { score: 'desc' },
+    });
 
-    // Get applications and rank them
-    let applications = await Application.find(query)
-      .populate('studentId')
-      .sort({ score: -1 });
-
-    // Add rank
-    applications = applications.map((app, index) => ({
-      ...app.toObject(),
+    const rankedApplications = applications.map((app, index) => ({
+      ...app,
+      scoreBreakdown: JSON.parse(app.scoreBreakdown || '{}'),
+      student: parseJsonFields(app.student, [
+        'cgpa',
+        'skills',
+        'projects',
+        'experience',
+        'education',
+        'socialLinks',
+        'uss',
+        'improvementSuggestions',
+      ]),
       rank: index + 1,
     }));
 
     return NextResponse.json({
       success: true,
-      data: applications,
+      data: rankedApplications,
     });
   } catch (error) {
     console.error('Error fetching applications:', error);

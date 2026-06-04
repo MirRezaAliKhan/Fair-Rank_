@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { FileText, Plus, Edit2, ExternalLink } from 'lucide-react';
+import { Plus, Edit2, ExternalLink } from 'lucide-react';
 import Navbar from '@/app/components/Navbar';
 import ScoreCard from '@/app/components/ScoreCard';
-import ProgressBar from '@/app/components/ProgressBar';
 import axios from 'axios';
 
 export default function StudentDashboard() {

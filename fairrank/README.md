@@ -26,7 +26,7 @@ A modern, full-stack web application that replaces traditional CGPA-based shortl
 - **Frontend**: Next.js 14 with React 18, TypeScript
 - **Styling**: Tailwind CSS with custom components
 - **Backend**: Next.js API Routes
-- **Database**: MongoDB (with Mongoose)
+- **Database**: SQLite with Prisma ORM
 - **Authentication**: JWT-based (extendable to Clerk/Firebase)
 - **Charts**: Recharts for data visualization
 - **State Management**: Zustand (ready for implementation)
@@ -49,7 +49,7 @@ fairrank/
 │   ├── layout.tsx             # Root layout
 │   └── page.tsx               # Landing page
 ├── lib/
-│   ├── db.ts                  # MongoDB connection
+│   ├── db.ts                  # Prisma database client
 │   ├── auth.ts                # Authentication utilities
 │   └── scoring.ts             # USS calculation engine
 ├── models/
@@ -70,7 +70,6 @@ fairrank/
 
 ### Prerequisites
 - Node.js 18+
-- MongoDB (local or Atlas)
 - npm or yarn
 
 ### Installation
@@ -87,7 +86,7 @@ cp .env.example .env.local
 ```
 
 Edit `.env.local` with your:
-- MongoDB URI
+- `DATABASE_URL` (SQLite or PostgreSQL)
 - JWT secret
 - API URL
 

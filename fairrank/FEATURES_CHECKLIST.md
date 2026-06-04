@@ -139,7 +139,7 @@
 - ✅ Next.js 14 (React 18)
 - ✅ TypeScript throughout
 - ✅ Tailwind CSS
-- ✅ MongoDB + Mongoose
+- ✅ Prisma + SQLite
 - ✅ Node.js API backend
 - ✅ JWT authentication
 - ✅ Axios for HTTP calls

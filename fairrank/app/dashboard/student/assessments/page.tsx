@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Navbar from '@/app/components/Navbar';
 import ProgressBar from '@/app/components/ProgressBar';
@@ -79,7 +79,6 @@ const ASSESSMENTS = [
 ];
 
 export default function AssessmentsPage() {
-  const [user, setUser] = useState<any>(null);
   const [currentAssessment, setCurrentAssessment] = useState<any>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
@@ -88,10 +87,6 @@ export default function AssessmentsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
     setLoading(false);
   }, []);
 

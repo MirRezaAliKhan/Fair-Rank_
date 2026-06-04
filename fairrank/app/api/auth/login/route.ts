@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import { User } from '@/models/User';
+import prisma from '@/lib/db';
 import { comparePasswords, generateToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect();
-
     const body = await request.json();
     const { email, password } = body;
 
@@ -17,8 +14,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user
-    const user = await User.findOne({ email });
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -26,7 +22,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Compare passwords
     const isPasswordValid = await comparePasswords(password, user.password);
     if (!isPasswordValid) {
       return NextResponse.json(
@@ -35,14 +30,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate token
-    const token = generateToken(user._id.toString(), user.role);
+    const token = generateToken(user.id, user.role);
 
     return NextResponse.json({
       success: true,
       token,
       user: {
-        id: user._id,
+        id: user.id,
         email: user.email,
         name: user.name,
         role: user.role,

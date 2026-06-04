@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import { StudentProfile } from '@/models/StudentProfile';
-import { SkillAssessment } from '@/models/SkillAssessment';
+import prisma from '@/lib/db';
+import { parseJsonFields, stringifyJsonFields } from '@/lib/jsonHelpers';
 
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect();
-
     const body = await request.json();
     const { studentId, skillName, questions, score } = body;
 
@@ -17,28 +14,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create skill assessment
-    const assessment = await SkillAssessment.create({
-      studentId,
-      skillName,
-      questions,
-      score,
-      totalQuestions: questions.length,
-      correctAnswers: questions.filter((q: any) => q.correct).length,
-      status: 'completed',
+    const assessment = await prisma.skillAssessment.create({
+      data: {
+        studentId,
+        skillName,
+        questions: stringifyJsonFields({ questions }, ['questions']).questions,
+        score,
+        totalQuestions: questions.length,
+        correctAnswers: questions.filter((q: any) => q.correct).length,
+        status: 'completed',
+        completedAt: new Date(),
+      },
     });
 
-    // Update student profile with skill assessment result
-    const profile = await StudentProfile.findById(studentId);
+    const profile = await prisma.studentProfile.findUnique({
+      where: { id: studentId },
+    });
 
     if (profile) {
-      const skillIndex = profile.skills.findIndex((s: any) => s.name === skillName);
+      const parsedProfile = parseJsonFields(profile, ['skills']);
+      const skills = Array.isArray(parsedProfile.skills) ? [...parsedProfile.skills] : [];
+      const skillIndex = skills.findIndex((s: any) => s.name === skillName);
 
       if (skillIndex !== -1) {
-        profile.skills[skillIndex].assessmentScore = score;
-        profile.skills[skillIndex].verified = true;
+        skills[skillIndex] = {
+          ...skills[skillIndex],
+          assessmentScore: score,
+          verified: true,
+        };
       } else {
-        profile.skills.push({
+        skills.push({
           name: skillName,
           proficiency: score >= 80 ? 'advanced' : score >= 60 ? 'intermediate' : 'beginner',
           verified: true,
@@ -46,12 +51,17 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      await profile.save();
+      await prisma.studentProfile.update({
+        where: { id: studentId },
+        data: {
+          skills: JSON.stringify(skills),
+        },
+      });
     }
 
     return NextResponse.json({
       success: true,
-      data: assessment,
+      data: parseJsonFields(assessment, ['questions']),
     });
   } catch (error) {
     console.error('Error creating skill assessment:', error);

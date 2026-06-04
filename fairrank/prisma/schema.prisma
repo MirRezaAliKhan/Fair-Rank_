@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String           @id @default(cuid())
+  email           String           @unique
+  password        String
+  name            String
+  role            String
+  avatar          String?          
+  verified        Boolean          @default(false)
+  studentProfile  StudentProfile?
+  jobRoles        JobRole[]        @relation("RecruiterRoles")
+  applications    Application[]    @relation("RecruiterApplications")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model StudentProfile {
+  id                    String            @id @default(cuid())
+  userId                String            @unique
+  user                  User              @relation(fields: [userId], references: [id])
+  cgpa                  String            @default("{}")
+  skills                String            @default("[]")
+  projects              String            @default("[]")
+  experience            String            @default("[]")
+  education             String?
+  socialLinks           String?
+  uss                   String?
+  improvementSuggestions String?
+  applications          Application[]
+  skillAssessments      SkillAssessment[]
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+}
+
+model SkillAssessment {
+  id             String          @id @default(cuid())
+  studentId      String
+  student        StudentProfile  @relation(fields: [studentId], references: [id])
+  skillName      String
+  questions      String
+  score          Int
+  totalQuestions Int
+  correctAnswers Int
+  duration       Int?
+  completedAt    DateTime        @default(now())
+  status         String          @default("in-progress")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model JobRole {
+  id             String         @id @default(cuid())
+  recruiterId    String
+  recruiter      User           @relation("RecruiterRoles", fields: [recruiterId], references: [id])
+  title          String
+  description    String?
+  requiredSkills String         @default("[]")
+  minUSSScore    Int             @default(0)
+  weights        String
+  filters        String?
+  applications   Application[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Application {
+  id             String          @id @default(cuid())
+  roleId         String
+  role           JobRole         @relation(fields: [roleId], references: [id])
+  studentId      String
+  student        StudentProfile  @relation(fields: [studentId], references: [id])
+  recruiterId    String
+  recruiter      User            @relation("RecruiterApplications", fields: [recruiterId], references: [id])
+  score          Float
+  scoreBreakdown String
+  status         String          @default("applied")
+  rank           Int?
+  appliedAt      DateTime        @default(now())
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @default(now())
+}

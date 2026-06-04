@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import { JobRole } from '@/models/JobRole';
+import prisma from '@/lib/db';
+import { parseJsonFields, stringifyJsonFields } from '@/lib/jsonHelpers';
+
+const roleJsonFields = ['requiredSkills', 'weights', 'filters'];
 
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect();
-
     const body = await request.json();
     const { recruiterId, title, description, requiredSkills, weights, filters } = body;
 
@@ -16,24 +16,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const role = await JobRole.create({
-      recruiterId,
-      title,
-      description: description || '',
-      requiredSkills: requiredSkills || [],
-      weights: weights || {
-        academics: 0.2,
-        skills: 0.3,
-        projects: 0.25,
-        experience: 0.15,
-        behavioral: 0.1,
-      },
-      filters: filters || {},
+    const role = await prisma.jobRole.create({
+      data: stringifyJsonFields(
+        {
+          recruiterId,
+          title,
+          description: description || '',
+          requiredSkills: requiredSkills || [],
+          weights:
+            weights ||
+            {
+              academics: 0.2,
+              skills: 0.3,
+              projects: 0.25,
+              experience: 0.15,
+              behavioral: 0.1,
+            },
+          filters: filters || {},
+        },
+        roleJsonFields
+      ),
     });
 
     return NextResponse.json({
       success: true,
-      data: role,
+      data: parseJsonFields(role, roleJsonFields),
     });
   } catch (error) {
     console.error('Error creating job role:', error);
@@ -46,8 +53,6 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    await dbConnect();
-
     const recruiterId = request.nextUrl.searchParams.get('recruiterId');
 
     if (!recruiterId) {
@@ -57,11 +62,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const roles = await JobRole.find({ recruiterId });
+    const roles = await prisma.jobRole.findMany({
+      where: { recruiterId },
+    });
 
     return NextResponse.json({
       success: true,
-      data: roles,
+      data: roles.map((role) => parseJsonFields(role, roleJsonFields)),
     });
   } catch (error) {
     console.error('Error fetching job roles:', error);

@@ -14,14 +14,18 @@ export async function comparePasswords(password: string, hashedPassword: string)
 }
 
 export function generateToken(userId: string, role: string): string {
-  return jwt.sign({ userId, role }, JWT_SECRET, {
-    expiresIn: JWT_EXPIRY,
-  });
+  return jwt.sign(
+    { userId, role },
+    JWT_SECRET as unknown as jwt.Secret,
+    {
+      expiresIn: JWT_EXPIRY as jwt.SignOptions['expiresIn'],
+    },
+  );
 }
 
 export function verifyToken(token: string): { userId: string; role: string } | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; role: string };
+    const decoded = jwt.verify(token, JWT_SECRET as unknown as jwt.Secret) as { userId: string; role: string };
     return decoded;
   } catch (error) {
     return null;

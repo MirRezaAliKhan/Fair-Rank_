@@ -5,7 +5,6 @@ This guide will help you set up and run FairRank locally.
 ## Prerequisites
 
 - Node.js 18+ installed
-- MongoDB (either local or MongoDB Atlas account)
 - npm or yarn
 - Git
 
@@ -30,9 +29,9 @@ Edit `.env.local` with your settings:
 
 ```env
 # Database
-MONGODB_URI=mongodb://localhost:27017/fairrank
-# For MongoDB Atlas:
-# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/fairrank
+DATABASE_URL="file:./dev.db"
+# For PostgreSQL:
+# DATABASE_URL="postgresql://user:password@localhost:5432/fairrank"
 
 # Authentication
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
@@ -45,40 +44,15 @@ NODE_ENV=development
 
 ## Step 2: Database Setup
 
-### Option A: Local MongoDB
+This project uses Prisma with SQLite by default. The database will be created automatically when you run the app or seed script.
 
-1. Install MongoDB Community Edition from https://www.mongodb.com/try/download/community
-2. Start MongoDB:
-   ```bash
-   # On macOS (if installed with Homebrew)
-   brew services start mongodb-community
-
-   # On Windows
-   mongod
-
-   # On Linux
-   sudo systemctl start mongod
-   ```
-
-3. Verify MongoDB is running:
-   ```bash
-   mongo --version
-   ```
-
-### Option B: MongoDB Atlas (Cloud)
-
-1. Go to https://www.mongodb.com/cloud/atlas
-2. Create a free account
-3. Create a cluster
-4. Get your connection string
-5. Update `MONGODB_URI` in `.env.local`
+If you want to use PostgreSQL, update `DATABASE_URL` in `.env.local`.
 
 ## Step 3: Seed Demo Data
 
 Create sample students and recruiters for testing:
 
 ```bash
-# Make sure MongoDB is running first
 npm run seed
 ```
 
@@ -119,10 +93,10 @@ Visit http://localhost:3000 to see the landing page with features and comparison
 
 ## Troubleshooting
 
-### MongoDB Connection Error
-- Ensure MongoDB is running
-- Check `MONGODB_URI` is correct
-- Verify network access (for Atlas)
+### Database Connection Error
+- Ensure the `DATABASE_URL` in `.env.local` is correct
+- For SQLite, verify the file path is writable
+- For PostgreSQL, verify that the database server is running and credentials are valid
 
 ### Port 3000 Already in Use
 ```bash
@@ -252,7 +226,7 @@ vercel
 For issues or questions:
 1. Check the README.md
 2. Review error messages carefully
-3. Check MongoDB connection
+3. Check the database connection and `DATABASE_URL`
 4. Verify environment variables
 
 ---

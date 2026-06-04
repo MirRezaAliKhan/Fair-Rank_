@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import { JobRole } from '@/models/JobRole';
+import prisma from '@/lib/db';
+import { parseJsonFields, stringifyJsonFields } from '@/lib/jsonHelpers';
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+const roleJsonFields = ['requiredSkills', 'weights', 'filters'];
+
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    await dbConnect();
-
     const body = await request.json();
-    const { id } = params;
+    const { id } = await context.params;
 
-    const updatedRole = await JobRole.findByIdAndUpdate(id, body, {
-      new: true,
-      runValidators: true,
+    const updatedRole = await prisma.jobRole.update({
+      where: { id },
+      data: stringifyJsonFields(body, roleJsonFields),
     });
 
     if (!updatedRole) {
@@ -23,7 +23,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json({
       success: true,
-      data: updatedRole,
+      data: parseJsonFields(updatedRole, roleJsonFields),
     });
   } catch (error) {
     console.error('Error updating job role:', error);

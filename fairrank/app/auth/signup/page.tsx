@@ -1,13 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
 
 export default function SignupPage() {
-  const searchParams = useSearchParams();
-  const role = searchParams.get('role') || 'student';
+  const [role, setRole] = useState('student');
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    setRole(searchParams.get('role') || 'student');
+  }, []);
 
   const [formData, setFormData] = useState({
     name: '',

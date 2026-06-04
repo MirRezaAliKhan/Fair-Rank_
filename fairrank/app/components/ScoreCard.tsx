@@ -1,4 +1,3 @@
-import React from 'react';
 
 interface ScoreCardProps {
   title: string;
@@ -15,7 +14,6 @@ export default function ScoreCard({
   icon,
   trust,
 }: ScoreCardProps) {
-  const percentage = (score / maxScore) * 100;
   const color =
     score >= 75
       ? 'bg-green-500'

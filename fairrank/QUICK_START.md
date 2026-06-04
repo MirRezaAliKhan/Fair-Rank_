@@ -11,13 +11,10 @@ npm install
 cp .env.example .env.local
 ```
 
-### 2. Start MongoDB
-```bash
-# Local MongoDB
-mongod
+### 2. Prepare the database
+The project uses SQLite by default, so no separate database server is required.
 
-# Or use MongoDB Atlas (update MONGODB_URI in .env.local)
-```
+If you prefer PostgreSQL, update `DATABASE_URL` in `.env.local`.
 
 ### 3. Seed Demo Data
 ```bash
@@ -86,9 +83,10 @@ Visit **http://localhost:3000** 🎉
 
 ## 🛠️ Troubleshooting
 
-**MongoDB won't connect?**
-- Ensure MongoDB is running (`mongod` command)
-- Check MONGODB_URI in .env.local
+**Database won't connect?**
+- Ensure `DATABASE_URL` in `.env.local` is correct
+- For SQLite, verify the database file path is valid and writable
+- For PostgreSQL, verify that the server is running and credentials are valid
 
 **Port 3000 in use?**
 - Run: `PORT=3001 npm run dev`

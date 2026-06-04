@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Users, BarChart3, Settings } from 'lucide-react';
 import Navbar from '@/app/components/Navbar';
@@ -168,7 +168,7 @@ export default function RecruiterDashboard() {
 
             {selectedRole && applications.length > 0 ? (
               <div className="space-y-4">
-                {applications.map((app: any, idx: number) => (
+                {applications.map((app: any) => (
                   <div
                     key={app._id}
                     className="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition"
@@ -215,7 +215,7 @@ export default function RecruiterDashboard() {
                         id={`application-status-${app._id}`}
                         aria-label="Application status"
                         value={app.status}
-                        onChange={(e) => {
+                        onChange={() => {
                           // Handle status update
                         }}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"

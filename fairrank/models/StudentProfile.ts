@@ -1,123 +1,22 @@
-import mongoose from 'mongoose';
+import prisma from '@/lib/db';
 
-const StudentProfileSchema = new mongoose.Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-      unique: true,
-    },
-    cgpa: {
-      value: {
-        type: Number,
-        min: 0,
-        max: 10,
-        default: 0,
-      },
-      verified: {
-        type: Boolean,
-        default: false,
-      },
-    },
-    skills: [
-      {
-        name: String,
-        proficiency: {
-          type: String,
-          enum: ['beginner', 'intermediate', 'advanced', 'expert'],
-        },
-        verified: Boolean,
-        assessmentScore: Number,
-      },
-    ],
-    projects: [
-      {
-        title: String,
-        description: String,
-        technologies: [String],
-        githubLink: String,
-        liveLink: String,
-        startDate: Date,
-        endDate: Date,
-        highlights: [String],
-      },
-    ],
-    experience: [
-      {
-        title: String,
-        company: String,
-        duration: String,
-        description: String,
-        skills: [String],
-      },
-    ],
-    education: {
-      institution: String,
-      branch: String,
-      graduationYear: Number,
-    },
-    socialLinks: {
-      github: String,
-      linkedin: String,
-      portfolio: String,
-    },
-    uss: {
-      score: {
-        type: Number,
-        min: 0,
-        max: 100,
-        default: 0,
-      },
-      confidence: {
-        type: Number,
-        min: 0,
-        max: 100,
-        default: 0,
-      },
-      breakdown: {
-        academics: {
-          score: Number,
-          weight: Number,
-        },
-        skills: {
-          score: Number,
-          weight: Number,
-        },
-        projects: {
-          score: Number,
-          weight: Number,
-        },
-        experience: {
-          score: Number,
-          weight: Number,
-        },
-        behavioral: {
-          score: Number,
-          weight: Number,
-        },
-      },
-      lastUpdated: Date,
-    },
-    improvementSuggestions: [
-      {
-        category: String,
-        suggestion: String,
-        potentialImpact: Number,
-      },
-    ],
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now,
-    },
+export const StudentProfile = {
+  create: (data: any) => prisma.studentProfile.create({ data }),
+  findOne: (where: any) => {
+    if (where.userId) {
+      return prisma.studentProfile.findUnique({ where: { userId: where.userId } });
+    }
+    return prisma.studentProfile.findFirst({ where });
   },
-  { timestamps: true }
-);
-
-export const StudentProfile =
-  mongoose.models.StudentProfile ||
-  mongoose.model('StudentProfile', StudentProfileSchema);
+  findById: (id: string) => prisma.studentProfile.findUnique({ where: { id } }),
+  findOneAndUpdate: async (where: any, data: any) => {
+    const uniqueWhere = where.userId ? { userId: where.userId } : { id: where.id };
+    return prisma.studentProfile.update({ where: uniqueWhere, data });
+  },
+  findByIdAndUpdate: (id: string, data: any) =>
+    prisma.studentProfile.update({ where: { id }, data }),
+  deleteMany: (where: any = {}) => prisma.studentProfile.deleteMany({ where }),
+  insertMany: async (items: any[]) => {
+    return Promise.all(items.map((item) => prisma.studentProfile.create({ data: item })));
+  },
+};

@@ -1,14 +1,12 @@
-import React from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface ChartProps {
   type: 'line' | 'bar';
   data: any[];
   dataKey: string;
-  label?: string;
 }
 
-export default function Chart({ type, data, dataKey, label }: ChartProps) {
+export default function Chart({ type, data, dataKey }: ChartProps) {
   if (type === 'line') {
     return (
       <ResponsiveContainer width="100%" height={300}>

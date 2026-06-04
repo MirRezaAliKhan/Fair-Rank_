@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import { Application } from '@/models/Application';
+import prisma from '@/lib/db';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    await dbConnect();
-
     const body = await request.json();
-    const { id } = params;
+    const { id } = await context.params;
     const { status } = body;
 
     if (!['applied', 'shortlisted', 'rejected', 'selected'].includes(status)) {
@@ -20,11 +17,10 @@ export async function PATCH(
       );
     }
 
-    const application = await Application.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true }
-    );
+    const application = await prisma.application.update({
+      where: { id },
+      data: { status },
+    });
 
     if (!application) {
       return NextResponse.json(

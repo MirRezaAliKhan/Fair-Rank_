@@ -53,7 +53,7 @@ fairrank/
 │   │   └── globals.css                   Global styles
 │   │
 │   ├── lib/                              [Backend Utilities]
-│   │   ├── db.ts                         MongoDB connection
+│   │   ├── db.ts                         Prisma database client
 │   │   ├── auth.ts                       Auth helpers (JWT, password hashing)
 │   │   ├── scoring.ts                    USS calculation engine
 │   │   ├── api.ts                        API client utilities
@@ -223,7 +223,7 @@ fairrank/
 
 ### Backend
 - **API Routes**: Next.js API Routes
-- **Database**: MongoDB with Mongoose
+- **Database**: Prisma with SQLite (configurable via DATABASE_URL)
 - **Authentication**: JWT (jsonwebtoken)
 - **Password**: bcryptjs hashing
 - **Environment**: dotenv
@@ -260,7 +260,7 @@ Recruiter: recruiter@example.com / password123
 ### Sample Students (3 profiles)
 1. **Raj Patel** - High CGPA, Strong Projects
    - CGPA: 8.5 (Verified)
-   - Skills: React, Node.js, MongoDB
+   - Skills: React, Node.js, SQL
    - Projects: E-commerce Platform, Todo App
    - USS Score: ~80+
 
@@ -387,7 +387,7 @@ The project is structured for easy deployment to:
 This project demonstrates:
 - Full-stack JavaScript/TypeScript development
 - Next.js 14 patterns and best practices
-- MongoDB schema design
+- SQL schema design with Prisma
 - JWT authentication
 - React component architecture
 - Tailwind CSS styling

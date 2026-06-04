@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/app/components/Navbar';
@@ -99,7 +99,7 @@ export default function CandidateDetailPage() {
             id="application-status"
             aria-label="Application status"
             value={application?.status}
-            onChange={(e) => {
+            onChange={() => {
               // Handle status update
             }}
             className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
